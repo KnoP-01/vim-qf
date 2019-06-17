@@ -2,7 +2,7 @@
 " Maintainer:	romainl <romainlafourcade@gmail.com>
 " Version:	0.2.0
 " License:	MIT
-" Location:	autoload/preview.vim
+" Location:	autoload/history.vim
 " Website:	https://github.com/romainl/vim-qf
 "
 " Use this command to get help on vim-qf:
@@ -19,18 +19,22 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
-" open the current entry in th preview window
-function! qf#preview#PreviewFileUnderCursor()
-    let cur_list = qf#GetList()
-    let cur_line = getline(line('.'))
-    let cur_file = fnameescape(qf#GetEntryPath(cur_line))
+function! s:history(newer)
+    let loc = get(b:, 'qf_isLoc', 0)
+    let cmd = (loc ? 'l' : 'c') . (a:newer ? 'newer' : 'older')
 
-    if cur_line =~ '|\d\+'
-        let cur_pos  = substitute(cur_line, '^\(.\{-}|\)\(\d\+\)\(.*\)', '\2', '')
-        execute "pedit +" . cur_pos . " " . cur_file
-    else
-        execute "pedit " . cur_file
-    endif
+    try
+        execute cmd
+    catch /^Vim\%((\a\+)\)\=:E\%(380\|381\):/
+    endtry
+endfunction
+
+function! qf#history#Older()
+    call s:history(0)
+endfunction
+
+function! qf#history#Newer()
+    call s:history(1)
 endfunction
 
 let &cpo = s:save_cpo
